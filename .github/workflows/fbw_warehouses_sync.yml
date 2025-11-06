@@ -1,0 +1,33 @@
+name: Sync FBW Warehouses (WB → Supabase)
+
+on:
+  schedule:
+    - cron: "0 4 * * *"   # 07:00 MSK == 04:00 UTC
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run sync
+        env:
+          WB_SUPPLIES_TOKEN: ${{ secrets.WB_SUPPLIES_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_SCHEMA: "public"
+          SUPABASE_TABLE: "fbw_warehouses"
+        run: |
+          python fetch_wb_fbw_warehouses.py
